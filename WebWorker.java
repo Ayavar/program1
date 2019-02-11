@@ -67,32 +67,35 @@ public class WebWorker implements Runnable
           writeHTTPHeader(os,"text/html");
           writeFileContent(os);
         }
+        //If the user is looking for http://localhost:8080/<cs371server> it will print the custom text message.
         else if (location.equals("/%3Ccs371server%3E"))
         {
           writeHTTPHeader(os,"text/html");
           writeCustomContent(os);
         }
+        //If the user is looking for http://localhost:8080/<cs371date> it will print the time and date.
         else if (location.equals("/%3Ccs371date%3E"))
         {
           writeHTTPHeader(os,"text/html");
           writeDateContent(os);
         }
-                else if (!location.contains(".html"))
+        //If the user is not looking for anything (Example: http://localhost:8080/) it will print the default message
+        //"My web server works!."
+        else if (location.equals("/"))
         {
-          write404Header(os,"text/html");
+          writeHTTPHeader(os,"text/html");
+          writeContent(os);
         }
-        //If the file is not found it will print "Error 404."
+        //If the file is not found it will print a custom not found webside.
         else
         {
           write404Header(os,"text/html");
         }
       }
-      //If the user is not looking for a file, (Example: http://localhost:8080) the program will print
-      //the defalt text "My web server works!."
+      //For any other requests the program will go to the custom Not Found webside.
       else
       {
-        writeHTTPHeader(os,"text/html");
-        writeContent(os);
+        write404Header(os,"text/html");
       }
       os.flush();
       socket.close();
@@ -103,6 +106,7 @@ public class WebWorker implements Runnable
     return;
   }
   
+  //This method will return a true or false boolean, after looking for the file, depending on the file existing or not existing.
   private boolean fileExists (String location2)
   {
     location2 = (System.getProperty("user.dir")+(location2)).trim();
@@ -130,10 +134,11 @@ public class WebWorker implements Runnable
         System.out.println(lineCopy);
         System.err.println("Request line: ("+lineCopy+")");
         
-        //It will only look for .html files and not other files like .ico.
-        if ((lineCopy.contains("GET") && lineCopy.contains(".html")) || lineCopy.contains("%3Ccs371date%3E") || lineCopy.contains("%3Ccs371server%3E"))
+        //Looks for the line containing "GET", to see what the user is looking for.
+        if ((lineCopy.contains("GET") || lineCopy.contains("%3Ccs371date%3E") || lineCopy.contains("%3Ccs371server%3E")))
         {
-          //After the .html is found it will isolate the .html by removing "GET and "HTTP/1.1" form the line.
+          //After the GET line is found it will remove "GET and "HTTP/1.1" form the line, leaving behide only the name
+          //of the file the user is looking for.
           lineCopy = lineCopy.substring(3);
           String[] lineCopyArray = lineCopy.split(" ");
           String lineCopy3 = lineCopyArray[1];
@@ -227,7 +232,7 @@ public class WebWorker implements Runnable
     os.write("<h3>My web server works!</h3>\n".getBytes());
     os.write("</body></html>\n".getBytes());
   }
-  
+  //This method prints custom message when the user types http://localhost:8080/<cs371server>.
   private void writeCustomContent(OutputStream os) throws Exception
   {
     os.write("<html><head></head><body>\n".getBytes());
@@ -235,6 +240,7 @@ public class WebWorker implements Runnable
     os.write("</body></html>\n".getBytes());
   }
   
+    //This method prints the date and time when the user types http://localhost:8080/<cs371date>.
     private void writeDateContent(OutputStream os) throws Exception
   {
       Date d = new Date();
